@@ -244,7 +244,7 @@ wifi_init();
 
   //创建线程任务 检测传输过来的 NOW 数据 如果有异常作出对应响应
   void NOWDATA_test(void *pvParameters);
-  xTaskCreate(NOWDATA_test,"NOWDATA_TEST",4086,NULL,1,NULL);
+  //xTaskCreate(NOWDATA_test,"NOWDATA_TEST",4086,NULL,1,NULL);  //应该在接收到数据的回调函数中创建线程任务
 
 
 }
@@ -484,15 +484,6 @@ void taskCore1(void *pvParameters) {
       }
       
     }
-    
-    
-    
-
-
-
-
-    
-
       analogWrite(led_pin,sensorValue );
   }
 
@@ -565,116 +556,143 @@ void init_oled()
 
 //创建线程任务 检测传输过来的 NOW 数据 如果有异常作出对应响应
   void NOWDATA_test(void *pvParameters){
+
     while (true)
     {
-      if (MY_bin.flag == yichu_flag)
-    {
-        Serial.println("垃圾桶溢出传感器的状态：");
-        if (!MY_bin.BIN1)  // 传输过来 溢出为 0 取反为真
-        {
-            Serial.println("厨余垃圾桶溢满!!");
-            display_part_bmp(0,0,64,64,chuyu_64,oled);
-            display_part_bmp(64,0,64,64,yichu_64_64,oled);
-            vTaskDelay(1000);
+      Serial.println("多线程 now 接受数据");
+
+      Serial.println(MY_bin.BIN1);
+      Serial.println(MY_bin.BIN2);
+      Serial.println(MY_bin.BIN3);
+      Serial.println(MY_bin.BIN4);
+      Serial.println(MY_bin.flag);
+      MY_bin.flag = 99;
+      if (MY_bin.flag == 99)
+      {
+        Serial.println("这是个无用数据");
+      }
+      else
+      {
             
-             UI_main(oled,main_UI_flag);
-        }
-        else
-        {
-            Serial.println("厨余垃圾桶暂未溢满!!");
-        }
-        
-        if (!MY_bin.BIN2)
-        {
-            Serial.println("可回收物垃圾桶溢满!!");
-            display_part_bmp(0,0,64,64,kehuishouwu_64,oled);
-            display_part_bmp(64,0,64,64,yichu_64_64,oled);
-            vTaskDelay(1000);
+
+
+          if (MY_bin.flag == yichu_flag)
+          {
+
+            Serial.println("垃圾桶溢出传感器的状态：");
+            if (!MY_bin.BIN1)  // 传输过来 溢出为 0 取反为真
+            {
+                Serial.println("厨余垃圾桶溢满!!");
+                display_part_bmp(0,0,64,64,chuyu_64,oled);
+                display_part_bmp(64,0,64,64,yichu_64_64,oled);
+                vTaskDelay(1000);
+                
+                UI_main(oled,main_UI_flag);
+            }
+            else
+            {
+                Serial.println("厨余垃圾桶暂未溢满!!");
+            }
             
-            UI_main(oled,main_UI_flag);
-        }
-        else
+            if (!MY_bin.BIN2)
+            {
+                Serial.println("可回收物垃圾桶溢满!!");
+                display_part_bmp(0,0,64,64,kehuishouwu_64,oled);
+                display_part_bmp(64,0,64,64,yichu_64_64,oled);
+                vTaskDelay(1000);
+                
+                UI_main(oled,main_UI_flag);
+            }
+            else
+            {
+                Serial.println("可回收物垃圾桶暂未溢满!!");
+            }
+            
+            if (!MY_bin.BIN3)
+            {
+                Serial.println("有害垃圾桶溢满!!");
+                display_part_bmp(0,0,64,64,youhai_64,oled);
+                display_part_bmp(64,0,64,64,yichu_64_64,oled);
+                vTaskDelay(1000);
+                UI_main(oled,main_UI_flag);
+            }
+            else
+            {
+                Serial.println("有害垃圾桶暂未溢满!!");
+            }
+            
+            if (!MY_bin.BIN4)
+            {
+                Serial.println("其他垃圾桶溢满!!");
+                display_part_bmp(0,0,64,64,qita_64,oled);
+                display_part_bmp(64,0,64,64,yichu_64_64,oled);
+                vTaskDelay(1000);
+                UI_main(oled,main_UI_flag);
+            }
+            else
+            {
+                Serial.println("其他垃圾桶暂未溢满!!");
+            }
+            delay(1000);
+          }
+        
+        if (MY_bin.flag == zhaohuo_flag)
         {
-            Serial.println("可回收物垃圾桶暂未溢满!!");
+            Serial.println("垃圾桶温度传感器的状态：");
+            if (MY_bin.BIN1)
+            {
+                Serial.println("厨余垃圾桶内温度异常,可能着火，请及时检查!!");
+            }
+            else
+            {
+                Serial.println("厨余垃圾桶温度正常!!");
+            }
+            
+            if (MY_bin.BIN2)
+            {
+                Serial.println("可回收物垃圾桶内温度异常,可能着火，请及时检查!!");
+            }
+            else
+            {
+                Serial.println("可回收物垃圾桶温度正常!!");
+            }
+            
+            if (MY_bin.BIN3)
+            {
+                Serial.println("有害垃圾桶内温度异常,可能着火，请及时检查!!");
+            }
+            else
+            {
+                Serial.println("有害垃圾桶温度正常!!");
+            }
+            
+            if (MY_bin.BIN4)
+            {
+                Serial.println("其他垃圾桶内温度异常,可能着火，请及时检查!!");
+            }
+            else
+            {
+                Serial.println("其他垃圾桶温度正常!!");
+            }
+            delay(1000);
+        }
+        if (MY_bin.flag == 99)
+        {
+          Serial.println("无用的 NOW 数据");
+          MY_bin.flag = 99;
         }
         
-        if (!MY_bin.BIN3)
-        {
-            Serial.println("有害垃圾桶溢满!!");
-            display_part_bmp(0,0,64,64,youhai_64,oled);
-            display_part_bmp(64,0,64,64,yichu_64_64,oled);
-            vTaskDelay(1000);
-            UI_main(oled,main_UI_flag);
-        }
-        else
-        {
-            Serial.println("有害垃圾桶暂未溢满!!");
-        }
-        
-        if (!MY_bin.BIN4)
-        {
-            Serial.println("其他垃圾桶溢满!!");
-            display_part_bmp(0,0,64,64,qita_64,oled);
-            display_part_bmp(64,0,64,64,yichu_64_64,oled);
-            vTaskDelay(1000);
-            UI_main(oled,main_UI_flag);
-        }
-        else
-        {
-            Serial.println("其他垃圾桶暂未溢满!!");
-        }
-        delay(1000);
-    }
+
+
+
     
-    if (MY_bin.flag == zhaohuo_flag)
-    {
-        Serial.println("垃圾桶温度传感器的状态：");
-        if (MY_bin.BIN1)
-        {
-            Serial.println("厨余垃圾桶内温度异常,可能着火，请及时检查!!");
-        }
-        else
-        {
-            Serial.println("厨余垃圾桶温度正常!!");
-        }
+
+      }
+
+      vTaskDelay(1000);
+
         
-        if (MY_bin.BIN2)
-        {
-            Serial.println("可回收物垃圾桶内温度异常,可能着火，请及时检查!!");
-        }
-        else
-        {
-            Serial.println("可回收物垃圾桶温度正常!!");
-        }
-        
-        if (MY_bin.BIN3)
-        {
-            Serial.println("有害垃圾桶内温度异常,可能着火，请及时检查!!");
-        }
-        else
-        {
-            Serial.println("有害垃圾桶温度正常!!");
-        }
-        
-        if (MY_bin.BIN4)
-        {
-            Serial.println("其他垃圾桶内温度异常,可能着火，请及时检查!!");
-        }
-        else
-        {
-            Serial.println("其他垃圾桶温度正常!!");
-        }
-        delay(1000);
-    }
-    if (MY_bin.flag == 99)
-    {
-      Serial.println("无用的 NOW 数据");
-    }
     
-
-
-
-    vTaskDelay(1000);
     }
     
 

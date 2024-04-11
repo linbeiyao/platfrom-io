@@ -1,13 +1,6 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-typedef struct struct_message
-{
-    char a[32];
-    int b;
-    float c;
-    bool d;
-} struct_message;
 
 //接受信息结构体的标志
 #define yichu_flag 0
@@ -21,7 +14,7 @@ struct bin_static
   bool BIN2;
   bool BIN3;
   bool BIN4;
-}MY_bin;
+}MY_bin = { flag = 99};
 
 
 const char *ssid = "123456";//wifi姓名
@@ -55,6 +48,9 @@ void now_init(){
     {
         Serial.println("初始化 ESP-NOW 时出错");
     }
+    else{
+        Serial.println("初始化 ESP-NOW 成功！！");
+    }
 
     // 一旦ESPNow成功初始化，我们将注册recv CB
     // 获取recv打包器信息
@@ -85,10 +81,16 @@ void OnDataRecv(const uint8_t * mac,const uint8_t *incomingData,int len){
     Serial.println(len);
 
     Serial.println("已收到数据.....");
+    Serial.println("数据内容为:");
+
+    Serial.println(MY_bin.BIN1);    
+    Serial.println(MY_bin.BIN2);
+    Serial.println(MY_bin.BIN3);
+    Serial.println(MY_bin.BIN4);
+    Serial.println(MY_bin.flag);
+
     delay(1000);
     
-
-
 }
 
 
