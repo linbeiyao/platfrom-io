@@ -9,10 +9,10 @@
 #include "net_now.h"
 //#include "bule.h"
 
-
-
-
-
+TaskHandle_t *task_asrpro;
+TaskHandle_t *task_ptc;
+TaskHandle_t *task_to_task;
+TaskHandle_t *task_warning;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +29,8 @@ void ASR_RRO();
 void taskCore0(void *pvParameters);
 //多线程 热敏电阻
 void taskCore1(void *pvParameters);
+//多线程 线程控制线程何时启动
+void task_cont_task(void *pvParameters);
 
 //初始化屏幕
 void init_oled();
@@ -192,12 +194,15 @@ void setup()
 
   Serial.println("初始化已经完成喽, 开始操作吧！ ^_^ ");
 
-  xTaskCreate(taskCore0, "asr_servo", 8888, NULL, 1, NULL);
-  xTaskCreate(taskCore1, "ptc", 4028, NULL, 1, NULL);
+  xTaskCreate(taskCore0, "asr_servo", 8888, NULL, 1, task_asrpro);
+  xTaskCreate(taskCore1, "ptc", 4028, NULL, 1, task_ptc);
 
   // 创建线程任务 检测传输过来的 NOW 数据 如果有异常作出对应响应
   void NOWDATA_test(void *pvParameters);
-  // xTaskCreate(NOWDATA_test,"NOWDATA_TEST",4086,NULL,1,NULL);  //应该在接收到数据的回调函数中创建线程任务
+  
+
+  // 创建线程任务 线程控制线程
+  xTaskCreate(task_cont_task,"task_cont_task",1024,NULL,1 ,task_to_task);
 
   
 }
@@ -208,25 +213,11 @@ void loop() {
 
   guangxian();
 
-  // WiFi.mode(WIFI_AP_STA);
-  // Serial.println(WiFi.macAddress());
 
-  // //测试图像
-  //   display_bmp(0,0,64,64,chuyu_64,oled);
-  //   display_bmp(0,0,64,64,kehuishouwu_64,oled);
-  //   display_bmp(0,0,64,64,qita_64,oled);
-  //   display_bmp(0,0,64,64,youhai_64,oled);
-  //   display_bmp(0,0,128,64,chuyu_128,oled);    
-  //   display_bmp(0,0,128,64,kehuishouwu_128,oled);
-  //   display_bmp(0,0,128,64,qita_128,oled);
-  //   display_bmp(0,0,128,64,youhai_128,oled);
 
-  //蓝牙测试
-  //test_data();
+
 
   delay(500);
-
-
 }
 
 
@@ -267,9 +258,6 @@ void ptc()
   }
 }
 // 热敏电阻模块 //////////////////////////////////////////////
-
-
-
 
 void beeper_start()
 {
@@ -500,6 +488,83 @@ void init_oled()
   oled.setFont(u8g2_font_unifont_t_chinese3); 
  
   Serial.println("屏幕初始化结束！！");
+}
+
+// 创建线程任务 检测传输过来的 NOW 数据 如果有异常作出对应响应
+  void NOWDATA_test(void *pvParameters){
+    
+    while (true)
+    {
+      
+      if(!myData.zhaohuo_BIN1 || !myData.zhaohuo_BIN2 || !myData.yichu_BIN3 || !myData.zhaohuo_BIN4){    // 四个中任意一个温度检测 有异常时
+
+        display_bmp(0,0,64,64,jinggao_64_64,oled);
+
+        if (!myData.zhaohuo_BIN1)
+        {
+          oled.setClipWindow(64,64,64,64);
+          display_bmp(64,64,64,64,chuyu_64,oled);
+        }
+                
+        if (!myData.zhaohuo_BIN1)
+        {
+          oled.setClipWindow(64,64,64,64);
+          display_bmp(64,64,64,64,youhai_64,oled);
+        }
+        
+        if (!myData.zhaohuo_BIN1)
+        {
+          oled.setClipWindow(64,64,64,64);
+          display_bmp(64,64,64,64,kehuishouwu_64,oled);
+        }
+        
+        if (!myData.zhaohuo_BIN1)
+        {
+          oled.setClipWindow(64,64,64,64);
+          display_bmp(64,64,64,64,qita_64,oled);
+        }
+        
+      }
+
+
+
+
+
+      if (myData.zhaohuo_BIN1 && myData.zhaohuo_BIN2 && myData.yichu_BIN3 && myData.zhaohuo_BIN4 
+        && myData.yichu_BIN1 && myData.yichu_BIN2 && myData.yichu_BIN3 && myData.yichu_BIN4 )  //全部都正常时恢复 UI 的主页面 并终止该线程
+      {
+        UI_main(oled,main_UI_flag);
+        vTaskDelete(task_warning);
+      }
+      
+      
+
+      vTaskDelay(100);
+    }
+    
+    
+  }
+
+
+void task_cont_task(void *pvParameters){
+
+  while (true)
+  {
+    if (myData.zhaohuo_BIN1 || myData.zhaohuo_BIN2 || myData.yichu_BIN3 || myData.zhaohuo_BIN4 
+          || myData.yichu_BIN1 || myData.yichu_BIN2 || myData.yichu_BIN3 || myData.yichu_BIN4 ) // 任何传感器有异常 启动线程   
+    {
+      xTaskCreate(NOWDATA_test,"NOWDATA_test",4028,NULL,1,task_warning);
+    }
+
+
+
+    vTaskDelay(100);
+  }
+
+
+  
+  
+  
 }
 
 

@@ -34,10 +34,10 @@ void now_init();
 //接收到数据的回调函数
 void OnDataRecv(const uint8_t * mac,const uint8_t *incomingData,int len);
 
-    //溢满异常
-    void yiman_warn();
-    //温度异常
-    void wendu_warn();
+//溢满异常
+void yiman_warn();
+//温度异常
+void wendu_warn();
 
 
 
@@ -76,6 +76,7 @@ void wifi_init(){
 
 
 // callback function that will be executed when data is received
+// 回调函数这里只负责更新数据 ， 异常检测由 main.cpp 文件中的多线程任务来完成
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));
 
@@ -94,34 +95,5 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   Serial.print("这是第 ");
   Serial.print(i++);
   Serial.println(" 次接受 now 数据！！");
-
-  //触发异常功能
-    //溢满异常
-    
-    //温度异常
-
-}
-
-//溢满异常   左侧显示溢出的64 * 64 的位图 右侧轮流显示 溢出的图像每个图标
-void yiman_warn(){
-
-    
-    oled.setClipWindow(64,64,64,64);  //设置输出窗口的范围
-    while (true)
-    {
-        if (!myData.yichu_BIN1)
-        {
-            
-        }
-        
-    }
-   
-    
-
-}
-//温度异常
-void wendu_warn(){
-
-
 }
 
