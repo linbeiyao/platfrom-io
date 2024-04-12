@@ -26,7 +26,6 @@ void ptc_zhaohuo_task(void *pvParameters);
 void time_out_task(void *pvParameters);
 
 
-
 //多线程 物联网云平台
 void MQTT_task(void *pvParameters);
 
@@ -249,3 +248,15 @@ void MQTT_task(void *pvParameters){
     vTaskDelay(pdMS_TO_TICKS(1000 * 10)); // 例如，延迟 100 毫秒
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+

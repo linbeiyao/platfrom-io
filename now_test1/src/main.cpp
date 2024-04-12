@@ -6,10 +6,14 @@
 // Structure example to receive data
 // Must match the sender structure
 typedef struct struct_message {
-    char a[32];
-    int b;
-    float c;
-    bool d;
+   bool yichu_BIN1;
+  bool yichu_BIN2;
+  bool yichu_BIN3;
+  bool yichu_BIN4;
+  bool zhaohuo_BIN1;
+  bool zhaohuo_BIN2;
+  bool zhaohuo_BIN3;
+  bool zhaohuo_BIN4;
 } struct_message;
 
 // Create a struct_message called myData
@@ -18,17 +22,21 @@ struct_message myData;
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));
-  Serial.print("Bytes received: ");
+
+  Serial.print("Bytes received:");
   Serial.println(len);
-  Serial.print("Char: ");
-  Serial.println(myData.a);
-  Serial.print("Int: ");
-  Serial.println(myData.b);
-  Serial.print("Float: ");
-  Serial.println(myData.c);
-  Serial.print("Bool: ");
-  Serial.println(myData.d);
-  Serial.println();
+  Serial.println(myData.yichu_BIN1);
+  Serial.println(myData.yichu_BIN2);
+  Serial.println(myData.yichu_BIN3);
+  Serial.println(myData.yichu_BIN4);
+  Serial.println(myData.zhaohuo_BIN1);
+  Serial.println(myData.zhaohuo_BIN2);
+  Serial.println(myData.zhaohuo_BIN3);
+  Serial.println(myData.zhaohuo_BIN4);
+  static int i = 0;
+  Serial.println(i++);
+
+
 }
  
 void setup() {

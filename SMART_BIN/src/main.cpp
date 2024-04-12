@@ -13,6 +13,7 @@
 
 
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //实现位图
@@ -46,41 +47,39 @@ void guangxian();
 //led_pin
 #define led_pin 32
 
-//光线传感器 针脚
+// 光线传感器 针脚
 #define guang_d0_pin 34
 #define guang_a0_pin 35
 
-//强光标识
-     bool qiang_flag = false;
-     bool qiang_xianshi_flag;
+// 强光标识
+bool qiang_flag = false;
+bool qiang_xianshi_flag;
 
-//屏幕的高度、宽度
+// 屏幕的高度、宽度
 #define SCREEN_height 64
 #define SCREEN_width 128
 
 bool main_UI_flag = false;
 
-//实例化屏幕
-//Adafruit_SSD1306 oled = Adafruit_SSD1306(SCREEN_width,SCREEN_height,&Wire);
- U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0,22,21,U8X8_PIN_NONE);
+// 实例化屏幕
+// Adafruit_SSD1306 oled = Adafruit_SSD1306(SCREEN_width,SCREEN_height,&Wire);
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, 22, 21, U8X8_PIN_NONE);
 
- 
-
-//舵机 start ==============================================
-//舵机的针脚
+// 舵机 start ==============================================
+// 舵机的针脚
 #define servo_1_pin 13
 #define servo_2_pin 12
 #define servo_3_pin 14
 #define servo_4_pin 27
 
-//asr pro pin
+// asr pro pin
 #define asr_1_pin 15
 #define asr_2_pin 2
 #define asr_3_pin 4
 #define asr_4_pin 5
 #define asr_output_pin 18
 
-//舵机最大转动角度
+// 舵机最大转动角度
 #define MAX_WIDTH 2500
 #define MIN_WIDTH 500
 
@@ -89,38 +88,32 @@ Servo servo_2;
 Servo servo_3;
 Servo servo_4;
 
-
-//舵机的运动状态
+// 舵机的运动状态
 bool servo1_turning = false;
 bool servo2_turning = false;
 bool servo3_turning = false;
 bool servo4_turning = false;
 
+// 舵机 end ================================================
 
-//舵机 end ================================================
-
-//蜂鸣器
+// 蜂鸣器
 #define beep_pin 26
-
 
 // 红外传感器 PIN
 #define IR_pin 19
 
-//热敏电阻 PIN 
+// 热敏电阻 PIN
 #define ptc_pin 23
 
+void setup()
+{
+  ASR_RRO();  // 语音模块
+  pinMode(ptc_pin, INPUT);  // 热敏电阻模块 start
+  guanxian_init();// 光线传感 初始化
+  init_oled();
+  beeper_start();// beeper start 
+  now_init();    //初始化 now 协议
 
-
-
-
-
-
-
-
-
-
-
-void setup() {
 
 
   Serial.begin(115200);
@@ -130,74 +123,50 @@ void setup() {
   delay(500);
 
 
+  
 
-
-//wifi start ////////////////////////////////////////////
-
-Serial.println("开始初始化wifi");
-wifi_init();
-
-
-
-//NOW start ==============================================
-
-  now_init();
-
-
-
-
-
-//舵机 start ==============================================
+  // 舵机 start ==============================================
   Serial.println("嘿嘿! 舵机初始化,舵机初始化！！⁄(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄ ");
   delay(500);
-  //分配硬件定时器
+  // 分配硬件定时器
   ESP32PWM::allocateTimer(0);
-  //设置频率
-  servo_1.setPeriodHertz(50);  
+  // 设置频率
+  servo_1.setPeriodHertz(50);
   servo_2.setPeriodHertz(50);
   servo_3.setPeriodHertz(50);
   servo_4.setPeriodHertz(50);
 
-  //关联 servo 对象与 GPIO 引脚(asr_servo，设置脉宽范围
+  // 关联 servo 对象与 GPIO 引脚(asr_servo，设置脉宽范围
 
-  servo_1.attach(servo_1_pin,MIN_WIDTH,MAX_WIDTH);  
-  servo_2.attach(servo_2_pin,MIN_WIDTH,MAX_WIDTH);
-  servo_3.attach(servo_3_pin,MIN_WIDTH,MAX_WIDTH);
-  servo_4.attach(servo_4_pin,MIN_WIDTH,MAX_WIDTH); 
-  
- 
-  
-
-
+  servo_1.attach(servo_1_pin, MIN_WIDTH, MAX_WIDTH);
+  servo_2.attach(servo_2_pin, MIN_WIDTH, MAX_WIDTH);
+  servo_3.attach(servo_3_pin, MIN_WIDTH, MAX_WIDTH);
+  servo_4.attach(servo_4_pin, MIN_WIDTH, MAX_WIDTH);
 
   Serial.println("舵机初始化完成喽！！");
   delay(3000);
-//舵机 end ================================================
+  // 舵机 end ================================================
 
 
-
-  init_oled();
-
-
-  // // beeper start //////////////////////////////////////////
-    beeper_start();
 
   // 红外传感器 start ///////////////////////////////////////
   Serial.println("哈喽哈喽，这里是红外传感器！！！");
   Serial.println("红外传感器要开始测试喽......");
   delay(500);
-  pinMode(IR_pin,INPUT);
+  pinMode(IR_pin, INPUT);
   bool flag = false;
-  digitalWrite(IR_pin,HIGH);
+  digitalWrite(IR_pin, HIGH);
 
-  while(true){digitalWrite(beep_pin,HIGH);
+  while (true)
+  {
+    digitalWrite(beep_pin, HIGH);
     Serial.println(int(digitalRead(IR_pin)));
     if (digitalRead(IR_pin) == 0 && flag == false)
     {
       Serial.println("肯定有人在红外传感器前！！对吧？！");
       delay(500);
       flag = true;
-      
+
       break;
     }
     else
@@ -213,47 +182,27 @@ wifi_init();
 
 
 
-  // 语音模块
-  void ASR_RRO();
 
 
 
-// 热敏电阻模块 start
-  pinMode(ptc_pin,INPUT);
 
 
-
-  
-
-  // 光线传感 初始化
-  guanxian_init();
-   
-
-
-  //vTaskStartScheduler();
   oled.clearDisplay();
-  UI_main(oled,main_UI_flag);
+  UI_main(oled, main_UI_flag);
 
   Serial.println("初始化已经完成喽, 开始操作吧！ ^_^ ");
-
-
 
   xTaskCreate(taskCore0, "asr_servo", 8888, NULL, 1, NULL);
   xTaskCreate(taskCore1, "ptc", 4028, NULL, 1, NULL);
 
-
-  //创建线程任务 检测传输过来的 NOW 数据 如果有异常作出对应响应
+  // 创建线程任务 检测传输过来的 NOW 数据 如果有异常作出对应响应
   void NOWDATA_test(void *pvParameters);
-  //xTaskCreate(NOWDATA_test,"NOWDATA_TEST",4086,NULL,1,NULL);  //应该在接收到数据的回调函数中创建线程任务
+  // xTaskCreate(NOWDATA_test,"NOWDATA_TEST",4086,NULL,1,NULL);  //应该在接收到数据的回调函数中创建线程任务
 
-
+  
 }
 
-
-
 char beep_flag = 0;
-
-
 
 void loop() {
 
@@ -552,153 +501,6 @@ void init_oled()
  
   Serial.println("屏幕初始化结束！！");
 }
-
-
-//创建线程任务 检测传输过来的 NOW 数据 如果有异常作出对应响应
-  void NOWDATA_test(void *pvParameters){
-
-    while (true)
-    {
-      Serial.println("多线程 now 接受数据");
-
-      Serial.println(MY_bin.BIN1);
-      Serial.println(MY_bin.BIN2);
-      Serial.println(MY_bin.BIN3);
-      Serial.println(MY_bin.BIN4);
-      Serial.println(MY_bin.flag);
-      MY_bin.flag = 99;
-      if (MY_bin.flag == 99)
-      {
-        Serial.println("这是个无用数据");
-      }
-      else
-      {
-            
-
-
-          if (MY_bin.flag == yichu_flag)
-          {
-
-            Serial.println("垃圾桶溢出传感器的状态：");
-            if (!MY_bin.BIN1)  // 传输过来 溢出为 0 取反为真
-            {
-                Serial.println("厨余垃圾桶溢满!!");
-                display_part_bmp(0,0,64,64,chuyu_64,oled);
-                display_part_bmp(64,0,64,64,yichu_64_64,oled);
-                vTaskDelay(1000);
-                
-                UI_main(oled,main_UI_flag);
-            }
-            else
-            {
-                Serial.println("厨余垃圾桶暂未溢满!!");
-            }
-            
-            if (!MY_bin.BIN2)
-            {
-                Serial.println("可回收物垃圾桶溢满!!");
-                display_part_bmp(0,0,64,64,kehuishouwu_64,oled);
-                display_part_bmp(64,0,64,64,yichu_64_64,oled);
-                vTaskDelay(1000);
-                
-                UI_main(oled,main_UI_flag);
-            }
-            else
-            {
-                Serial.println("可回收物垃圾桶暂未溢满!!");
-            }
-            
-            if (!MY_bin.BIN3)
-            {
-                Serial.println("有害垃圾桶溢满!!");
-                display_part_bmp(0,0,64,64,youhai_64,oled);
-                display_part_bmp(64,0,64,64,yichu_64_64,oled);
-                vTaskDelay(1000);
-                UI_main(oled,main_UI_flag);
-            }
-            else
-            {
-                Serial.println("有害垃圾桶暂未溢满!!");
-            }
-            
-            if (!MY_bin.BIN4)
-            {
-                Serial.println("其他垃圾桶溢满!!");
-                display_part_bmp(0,0,64,64,qita_64,oled);
-                display_part_bmp(64,0,64,64,yichu_64_64,oled);
-                vTaskDelay(1000);
-                UI_main(oled,main_UI_flag);
-            }
-            else
-            {
-                Serial.println("其他垃圾桶暂未溢满!!");
-            }
-            delay(1000);
-          }
-        
-        if (MY_bin.flag == zhaohuo_flag)
-        {
-            Serial.println("垃圾桶温度传感器的状态：");
-            if (MY_bin.BIN1)
-            {
-                Serial.println("厨余垃圾桶内温度异常,可能着火，请及时检查!!");
-            }
-            else
-            {
-                Serial.println("厨余垃圾桶温度正常!!");
-            }
-            
-            if (MY_bin.BIN2)
-            {
-                Serial.println("可回收物垃圾桶内温度异常,可能着火，请及时检查!!");
-            }
-            else
-            {
-                Serial.println("可回收物垃圾桶温度正常!!");
-            }
-            
-            if (MY_bin.BIN3)
-            {
-                Serial.println("有害垃圾桶内温度异常,可能着火，请及时检查!!");
-            }
-            else
-            {
-                Serial.println("有害垃圾桶温度正常!!");
-            }
-            
-            if (MY_bin.BIN4)
-            {
-                Serial.println("其他垃圾桶内温度异常,可能着火，请及时检查!!");
-            }
-            else
-            {
-                Serial.println("其他垃圾桶温度正常!!");
-            }
-            delay(1000);
-        }
-        if (MY_bin.flag == 99)
-        {
-          Serial.println("无用的 NOW 数据");
-          MY_bin.flag = 99;
-        }
-        
-
-
-
-    
-
-      }
-
-      vTaskDelay(1000);
-
-        
-    
-    }
-    
-
-
-
-  }
 
 
 

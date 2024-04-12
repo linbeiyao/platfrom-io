@@ -20,7 +20,6 @@
 //垃圾桶传感器状态
 struct bin_static 
 {
-  int flag;
   bool yichu_BIN1;
   bool yichu_BIN2;
   bool yichu_BIN3;
@@ -38,6 +37,9 @@ bin_static MY_bin;
 void now_init();
 
 void OnDataSent(const uint8_t *mac_addr,esp_now_send_status_t status);
+
+//更新 NOW 数据
+void updata_now();
 
 //多线程 now 传输数据
 void now_task(void *pvParameters);
@@ -91,13 +93,12 @@ void now_init(){
 
 //发送数据   
 //检测所有针脚的状态 如果有一个针脚为异常也就是为 0 时 发送数据
-void now_send_data(bin_static &bin_static){
+void now_send_data(){
     //更新 MY_bin 的状态数据
-
-
+    updata_now();
 
     //发送数据并且获得 是否发送成功的结果
-    esp_err_t result = esp_now_send(broadcastAddress,(uint8_t*) &bin_static,sizeof(bin_static));
+    esp_err_t result = esp_now_send(broadcastAddress,(uint8_t*) &MY_bin,sizeof(MY_bin));
 
     if (result == ESP_OK) {
         Serial.println("发送成功！！");
@@ -110,5 +111,33 @@ void now_send_data(bin_static &bin_static){
 
 }
 
+
+
+
+//更新结构题数据函数
+void updata_now(){
+    MY_bin.yichu_BIN1 = digitalRead(IR1_pin);    
+    MY_bin.yichu_BIN2 = digitalRead(IR2_pin);    
+    MY_bin.yichu_BIN3 = digitalRead(IR3_pin);
+    MY_bin.yichu_BIN4 = digitalRead(IR4_pin);
+    MY_bin.zhaohuo_BIN1 = digitalRead(ptc1_pin);
+    MY_bin.zhaohuo_BIN2 = digitalRead(ptc2_pin);
+    MY_bin.zhaohuo_BIN3 = digitalRead(ptc3_pin);
+    MY_bin.zhaohuo_BIN4 = digitalRead(ptc4_pin);
+}
+
+//多线程 now 传输数据
+void now_task(void *pvParameters){
+
+   while (true)
+   {
+    now_send_data();
+    vTaskDelay(100);
+
+   }
+   
+
+
+}
 
 
