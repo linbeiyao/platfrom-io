@@ -7,19 +7,19 @@
 // Structure example to receive data
 // Must match the sender structure
 typedef struct struct_message {
-   bool yichu_BIN1;
-  bool yichu_BIN2;
-  bool yichu_BIN3;
-  bool yichu_BIN4;
-  bool zhaohuo_BIN1;
-  bool zhaohuo_BIN2;
-  bool zhaohuo_BIN3;
-  bool zhaohuo_BIN4;
+   bool yichu_BIN1 = true;
+  bool yichu_BIN2 = true;
+  bool yichu_BIN3 = true;
+  bool yichu_BIN4 = true;
+  bool zhaohuo_BIN1 = true;
+  bool zhaohuo_BIN2 = true;
+  bool zhaohuo_BIN3 = true;
+  bool zhaohuo_BIN4 = true;
 } struct_message;
 
 // Create a struct_message called myData
 struct_message myData;
-
+struct_message lastData; // 上一次发送的传感器状态
 
 const char *ssid = "123456";//wifi姓名
 const char *passwd = "88888888";

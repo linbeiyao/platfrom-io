@@ -10,8 +10,6 @@ const char *MQTT_password = "88888888";
 #define THINGSCLOUD_MQTT_HOST "sh-1-mqtt.iot-api.com"
 #define THINGSCLOUD_DEVICE_ACCESS_TOKEN "5l346910dz2pvdlr"
 #define THINGSCLOUD_PROJECT_KEY "zQ8kxpV7zH"
-
-#define YICHANG_PIN 13
 //======================================================
 
 
@@ -40,13 +38,6 @@ void MQTT_INIT(){
 
     //连接 WIFI AP
     MQTT_client.setWifiCredentials(MQTT_ssid,MQTT_password);
-
-
-    //设置异常针脚为输出，低电压
-    pinMode(YICHANG_PIN,OUTPUT);
-    digitalWrite(YICHANG_PIN,LOW);
-   
-    
 }
 
 //读取并发布传感器数据到 ThingsCloud
@@ -74,14 +65,14 @@ void pubSensors()
     {
         //传递异常状态到 ESP_1
         Serial.println("垃圾桶状态异常");
-        digitalWrite(YICHANG_PIN,HIGH);
+        
         //蜂鸣器发声
         //。。。。。。
     }
     else
     {
         //传递异常状态到 ESP_1
-        digitalWrite(YICHANG_PIN,LOW);
+       
         //蜂鸣器不发声
         //。。。。。。
     }

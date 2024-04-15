@@ -9,10 +9,10 @@
 #include "net_now.h"
 //#include "bule.h"
 
-TaskHandle_t *task_asrpro;
-TaskHandle_t *task_ptc;
-TaskHandle_t *task_to_task;
-TaskHandle_t *task_warning;
+TaskHandle_t task_asrpro;
+TaskHandle_t task_ptc;
+TaskHandle_t task_to_task;
+TaskHandle_t task_warning;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -110,26 +110,26 @@ bool servo4_turning = false;
 void setup()
 {
   ASR_RRO();  // 语音模块
-  pinMode(ptc_pin, INPUT);  // 热敏电阻模块 start
+  //pinMode(ptc_pin, INPUT);  // 热敏电阻模块 start
   guanxian_init();// 光线传感 初始化
   init_oled();
-  beeper_start();// beeper start 
+  //beeper_start();// beeper start 
   now_init();    //初始化 now 协议
 
 
 
   Serial.begin(115200);
   Serial.println(" ฅ^•ﻌ•^ฅ 串口监视器准备好了吗！？！ ");
-  delay(1000);
+  //delay(1000);
   Serial.println("我要开始初始化喽......");
-  delay(500);
+  //delay(500);
 
 
   
 
   // 舵机 start ==============================================
   Serial.println("嘿嘿! 舵机初始化,舵机初始化！！⁄(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄ ");
-  delay(500);
+  //delay(500);
   // 分配硬件定时器
   ESP32PWM::allocateTimer(0);
   // 设置频率
@@ -146,40 +146,40 @@ void setup()
   servo_4.attach(servo_4_pin, MIN_WIDTH, MAX_WIDTH);
 
   Serial.println("舵机初始化完成喽！！");
-  delay(3000);
+  delay(1000);
   // 舵机 end ================================================
 
 
 
   // 红外传感器 start ///////////////////////////////////////
-  Serial.println("哈喽哈喽，这里是红外传感器！！！");
-  Serial.println("红外传感器要开始测试喽......");
-  delay(500);
-  pinMode(IR_pin, INPUT);
-  bool flag = false;
-  digitalWrite(IR_pin, HIGH);
+  // Serial.println("哈喽哈喽，这里是红外传感器！！！");
+  // Serial.println("红外传感器要开始测试喽......");
+  // delay(500);
+  // pinMode(IR_pin, INPUT);
+  // bool flag = false;
+  // digitalWrite(IR_pin, HIGH);
 
-  while (true)
-  {
-    digitalWrite(beep_pin, HIGH);
-    Serial.println(int(digitalRead(IR_pin)));
-    if (digitalRead(IR_pin) == 0 && flag == false)
-    {
-      Serial.println("肯定有人在红外传感器前！！对吧？！");
-      delay(500);
-      flag = true;
+  // while (true)
+  // {
+  //   digitalWrite(beep_pin, HIGH);
+  //   Serial.println(int(digitalRead(IR_pin)));
+  //   if (digitalRead(IR_pin) == 0 && flag == false)
+  //   {
+  //     Serial.println("肯定有人在红外传感器前！！对吧？！");
+  //     delay(500);
+  //     flag = true;
 
-      break;
-    }
-    else
-    {
-      Serial.println("看来你不在红外传感器前......");
-      delay(500);
-    }
-    delay(1000);
-  }
-  Serial.println("红外传感器测试结束了!! 欧耶!!");
-  delay(500);
+  //     break;
+  //   }
+  //   else
+  //   {
+  //     Serial.println("看来你不在红外传感器前......");
+  //     delay(500);
+  //   }
+  //   delay(1000);
+  // }
+  // Serial.println("红外传感器测试结束了!! 欧耶!!");
+  // delay(500);
 
 
 
@@ -194,29 +194,24 @@ void setup()
 
   Serial.println("初始化已经完成喽, 开始操作吧！ ^_^ ");
 
-  xTaskCreate(taskCore0, "asr_servo", 8888, NULL, 1, task_asrpro);
-  xTaskCreate(taskCore1, "ptc", 4028, NULL, 1, task_ptc);
+  xTaskCreate(taskCore0, "asr_servo", 8888, NULL, 1, &task_asrpro);
+  //xTaskCreate(taskCore1, "ptc", 4028, NULL, 1, &task_ptc);
 
   // 创建线程任务 检测传输过来的 NOW 数据 如果有异常作出对应响应
   void NOWDATA_test(void *pvParameters);
   
 
   // 创建线程任务 线程控制线程
-  xTaskCreate(task_cont_task,"task_cont_task",1024,NULL,1 ,task_to_task);
+  xTaskCreate(task_cont_task,"task_cont_task",1024,NULL,1 ,&task_to_task);
 
   
 }
 
-char beep_flag = 0;
+
 
 void loop() {
 
-  guangxian();
-
-
-
-
-
+  //guangxian();
   delay(500);
 }
 
@@ -234,30 +229,30 @@ void loop() {
 
 
 
-// 热敏电阻模块 //////////////////////////////////////////////
-void ptc()
-{
-  //为低电压就代表高温度，发出报警,发出报警只需要给对应针脚高电压即可
-  if(!digitalRead(ptc_pin))
-  {
-    Serial.println(digitalRead(ptc_pin));
-    Serial.println("///////////////////////////");
-    Serial.println("警告：垃圾桶内可能着火！！");
-    Serial.println("警告：垃圾桶内可能着火！！");
-    Serial.println("警告：垃圾桶内可能着火！！");
-    Serial.println("///////////////////////////");    
-    display_bmp(65,0,64,64,jinggao_64_64,oled);
+// // 热敏电阻模块 //////////////////////////////////////////////
+// void ptc()
+// {
+//   //为低电压就代表高温度，发出报警,发出报警只需要给对应针脚高电压即可
+//   if(!digitalRead(ptc_pin))
+//   {
+//     Serial.println(digitalRead(ptc_pin));
+//     Serial.println("///////////////////////////");
+//     Serial.println("警告：垃圾桶内可能着火！！");
+//     Serial.println("警告：垃圾桶内可能着火！！");
+//     Serial.println("警告：垃圾桶内可能着火！！");
+//     Serial.println("///////////////////////////");    
+//     display_bmp(65,0,64,64,jinggao_64_64,oled);
 
 
 
-    digitalWrite(beep_pin,LOW);
-  }
-  else
-  {
-    digitalWrite(beep_pin,HIGH);
-  }
-}
-// 热敏电阻模块 //////////////////////////////////////////////
+//     digitalWrite(beep_pin,LOW);
+//   }
+//   else
+//   {
+//     digitalWrite(beep_pin,HIGH);
+//   }
+// }
+// // 热敏电阻模块 //////////////////////////////////////////////
 
 void beeper_start()
 {
@@ -326,16 +321,7 @@ void taskCore0(void *pvParameters) {
  }
 }
 
-void taskCore1(void *pvParameters) {
- while (1) {
 
-        esp_task_wdt_reset();
-        vTaskDelay(1000);
-        ptc();
-        vTaskDelay(1000);
-
- }
-}
 
 //舵机转动函数
  void TURN(Servo &servo, bool &turning) {
@@ -423,10 +409,8 @@ void taskCore1(void *pvParameters) {
     }
       analogWrite(led_pin,sensorValue );
   }
-
 // 语音模块
 void ASR_RRO()
-
 {
 
   pinMode(asr_1_pin,INPUT);  
@@ -436,7 +420,6 @@ void ASR_RRO()
   pinMode(asr_output_pin,OUTPUT);
 
 }
-
 //初始化屏幕
 void init_oled()
 {
@@ -449,21 +432,6 @@ void init_oled()
   oled.enableUTF8Print();
   oled.setFontDirection(0); // 设置文本方向
 
-
-  // oled.setCursor(0, 16);
-  // oled.print("u8g2初始化完成!!");
-  // oled.drawLine(0,18,128,18);
-  // oled.setFont(u8g2_font_wqy12_t_chinese3);
-  // oled.setCursor(0,32);
-  // oled.println("触发人体感应进行使用....");
-  // oled.sendBuffer();
-
-  // while(i != 128)
-  // {
-  //   oled.drawBox(0,34,i++,10);
-  //   oled.sendBuffer();
-  // }
-  
   oled.firstPage();
   oled.setFont(u8g_font_6x10r);
   do{
@@ -490,82 +458,168 @@ void init_oled()
   Serial.println("屏幕初始化结束！！");
 }
 
-// 创建线程任务 检测传输过来的 NOW 数据 如果有异常作出对应响应
-  void NOWDATA_test(void *pvParameters){
-    
-    while (true)
-    {
-      
-      if(!myData.zhaohuo_BIN1 || !myData.zhaohuo_BIN2 || !myData.yichu_BIN3 || !myData.zhaohuo_BIN4){    // 四个中任意一个温度检测 有异常时
+void handleAlarm();  //处理着火异常
+void handleOverflow();  //处理溢满异常
+void NOWDATA_test(void *pvParameters);
 
-        display_bmp(0,0,64,64,jinggao_64_64,oled);
+void task_cont_task(void *pvParameters) {
+    TaskHandle_t task_warning = NULL;
+    while (true) {
+        // 检测传感器状态是否发生异常
+        bool hasAlarm = (myData.zhaohuo_BIN1 == 0 || myData.zhaohuo_BIN2 == 0 || myData.yichu_BIN3 == 0 || myData.zhaohuo_BIN4 == 0 ||
+                         myData.yichu_BIN1 == 0 || myData.yichu_BIN2 == 0 || myData.yichu_BIN3 == 0 || myData.yichu_BIN4 == 0);
 
-        if (!myData.zhaohuo_BIN1)
-        {
-          oled.setClipWindow(64,64,64,64);
-          display_bmp(64,64,64,64,chuyu_64,oled);
+        // 检查是否需要创建或删除任务
+        if (hasAlarm && task_warning == NULL) {
+            // 传感器有异常且任务未创建时启动任务
+            xTaskCreate(NOWDATA_test, "NOWDATA_test", 4098, NULL, 1, &task_warning);
+            Serial.println("开启异常处理任务");
+        } else if (!hasAlarm && task_warning != NULL) {
+            // 传感器状态全部正常且任务已创建时删除任务
+            //vTaskDelete(task_warning);
+            task_warning = NULL;
+            Serial.println("删除异常处理任务");
         }
-                
-        if (!myData.zhaohuo_BIN1)
-        {
-          oled.setClipWindow(64,64,64,64);
-          display_bmp(64,64,64,64,youhai_64,oled);
-        }
-        
-        if (!myData.zhaohuo_BIN1)
-        {
-          oled.setClipWindow(64,64,64,64);
-          display_bmp(64,64,64,64,kehuishouwu_64,oled);
-        }
-        
-        if (!myData.zhaohuo_BIN1)
-        {
-          oled.setClipWindow(64,64,64,64);
-          display_bmp(64,64,64,64,qita_64,oled);
-        }
-        
-      }
 
-
-
-
-
-      if (myData.zhaohuo_BIN1 && myData.zhaohuo_BIN2 && myData.yichu_BIN3 && myData.zhaohuo_BIN4 
-        && myData.yichu_BIN1 && myData.yichu_BIN2 && myData.yichu_BIN3 && myData.yichu_BIN4 )  //全部都正常时恢复 UI 的主页面 并终止该线程
-      {
-        UI_main(oled,main_UI_flag);
-        vTaskDelete(task_warning);
-      }
-      
-      
-
-      vTaskDelay(100);
+        vTaskDelay(100);
     }
-    
-    
-  }
-
-
-void task_cont_task(void *pvParameters){
-
-  while (true)
-  {
-    if (myData.zhaohuo_BIN1 || myData.zhaohuo_BIN2 || myData.yichu_BIN3 || myData.zhaohuo_BIN4 
-          || myData.yichu_BIN1 || myData.yichu_BIN2 || myData.yichu_BIN3 || myData.yichu_BIN4 ) // 任何传感器有异常 启动线程   
-    {
-      xTaskCreate(NOWDATA_test,"NOWDATA_test",4028,NULL,1,task_warning);
-    }
-
-
-
-    vTaskDelay(100);
-  }
-
-
-  
-  
-  
 }
+
+
+void NOWDATA_test(void *pvParameters) {
+    while (true) {
+        Serial.println("开始循环异常任务");
+        // 检测传感器状态是否发生改变
+        //if (memcmp(&myData, &lastData, sizeof(struct_message)) != 0) {
+            //Serial.println("数据改变");
+
+            // 传感器状态发生改变，执行相应操作
+            if (myData.zhaohuo_BIN1 == 0 || myData.zhaohuo_BIN2 == 0 || myData.yichu_BIN3 == 0 || myData.zhaohuo_BIN4 == 0) {
+                Serial.println("着火状态异常");
+                handleAlarm(); // 处理着火异常
+                vTaskDelay(100);
+            } 
+            if (myData.yichu_BIN1 == 0 || myData.yichu_BIN2 == 0 || myData.yichu_BIN3 == 0 || myData.yichu_BIN4 == 0) {
+                Serial.println("溢满状态异常");
+                handleOverflow(); // 处理溢满异常
+                vTaskDelay(100);
+            } 
+            if (myData.zhaohuo_BIN1  && myData.zhaohuo_BIN2  && myData.yichu_BIN3  && myData.zhaohuo_BIN4  &&
+                         myData.yichu_BIN1  && myData.yichu_BIN2  && myData.yichu_BIN3  && myData.yichu_BIN4 )
+            {
+                Serial.println("全部正常");
+                // 全部正常时恢复 UI 的主页面并结束该任务
+                UI_main(oled, main_UI_flag);
+                vTaskDelete(NULL);
+            } 
+            
+             
+        //} else {
+           // Serial.println("..");
+       // }
+        memcpy(&lastData, &myData, sizeof(struct_message));
+        vTaskDelay(100);
+    }
+}
+
+
+void handleAlarm() {
+    // 有异常时显示警告界面
+    Serial.println("已进入着火异常处理函数");
+    display_bmp(0, 0, 64, 64, jinggao_64_64, oled);
+    vTaskDelay(500);
+
+    // 分别处理每种异常
+    if (!myData.zhaohuo_BIN1) {
+      Serial.println("1号垃圾桶内可能着火");
+      oled.clearDisplay();
+      oled.clearBuffer();
+      oled.drawXBMP(0,0,64,64,jinggao_64_64);
+      oled.drawXBMP(64,0,64,64,chuyu_64);
+      oled.sendBuffer();
+      vTaskDelay(500);
+    }
+    if (!myData.zhaohuo_BIN2) {
+      Serial.println("2号垃圾桶内可能着火");
+      oled.clearDisplay();
+      oled.clearBuffer();
+      oled.drawXBMP(0,0,64,64,jinggao_64_64);
+      oled.drawXBMP(64,0,64,64,youhai_64);
+      oled.sendBuffer();
+      vTaskDelay(500);
+    }
+    if (!myData.yichu_BIN3) {
+      Serial.println("3号垃圾桶内可能着火");
+      oled.clearDisplay();
+      oled.clearBuffer();
+      oled.drawXBMP(0,0,64,64,jinggao_64_64);
+      oled.drawXBMP(64,0,64,64,kehuishouwu_64);
+      oled.sendBuffer();
+      vTaskDelay(500);
+    } 
+    if (!myData.zhaohuo_BIN4) {
+      Serial.println("4号垃圾桶内可能着火");
+      oled.clearDisplay();
+      oled.clearBuffer();
+      oled.drawXBMP(0,0,64,64,jinggao_64_64);
+      oled.drawXBMP(64,0,64,64,qita_64);
+      oled.sendBuffer();
+      vTaskDelay(500);
+    }
+
+    vTaskDelay(1000);
+}
+
+void handleOverflow() {
+    // 有异常时显示警告界面
+    Serial.println("已进入溢满异常处理函数");
+    display_bmp(0, 0, 64, 64, jinggao_64_64, oled);
+    vTaskDelay(300);
+
+    // 分别处理每种异常
+    if (!myData.yichu_BIN1) {
+      Serial.println("1号垃圾桶内可能溢满");
+      oled.clearDisplay();
+      oled.clearBuffer();
+      oled.drawXBMP(0,0,64,64,yichu_64_64);
+      oled.drawXBMP(64,0,64,64,chuyu_64);
+      oled.sendBuffer();
+      vTaskDelay(500);
+    } 
+    if (!myData.yichu_BIN2) {
+      Serial.println("2号垃圾桶内可能溢满");
+      oled.clearDisplay();
+      oled.clearBuffer();
+      oled.drawXBMP(0,0,64,64,yichu_64_64);
+      oled.drawXBMP(64,0,64,64,youhai_64);
+      oled.sendBuffer();
+      vTaskDelay(500);
+    } 
+    if (!myData.yichu_BIN3) {
+      Serial.println("3号垃圾桶内可能溢满");
+      
+      oled.clearDisplay();
+      oled.clearBuffer();
+      oled.drawXBMP(0,0,64,64,yichu_64_64);
+      oled.drawXBMP(64,0,64,64,kehuishouwu_64);
+      oled.sendBuffer();
+      vTaskDelay(500);
+    } 
+    if (!myData.yichu_BIN4) {
+      Serial.println("4号垃圾桶内可能溢满");
+      oled.clearDisplay();
+      oled.clearBuffer();
+      oled.drawXBMP(0,0,64,64,yichu_64_64);
+      oled.drawXBMP(64,0,64,64,qita_64);
+      oled.sendBuffer();
+      vTaskDelay(500);
+      
+    }
+
+    vTaskDelay(1000);
+}
+
+
 
 
 

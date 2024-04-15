@@ -64,11 +64,12 @@ void setup() {
   //获取网络时间
   get_net_time();
   //断开网络
-  net_disconnect();
+  //net_disconnect();
 
- 
-  //Serial.println("初始化MQTT");
-  //MQTT_INIT();
+  Serial.println("开始初始化 NOW !!");
+  now_init();
+  Serial.println("初始化MQTT");
+  MQTT_INIT();
 
 
   //将时间输出到串口上
@@ -83,20 +84,16 @@ void setup() {
   PTCinit();
 
 //初始化并测试 now 
-  Serial.println("开始初始化 NOW !!");
-  now_init();
+  
 
-
-  //创建线程 溢出检测
-  //xTaskCreate(IR_yichu_task,"yichujiance_task",8888,NULL,1,NULL);
 
   //创建线程 时间输出
-  //xTaskCreate(time_out_task,"time_out",2048,NULL,1,NULL);
+  xTaskCreate(time_out_task,"time_out",2048,NULL,1,NULL);
 
   //创建线程 物联网云平台
-  //xTaskCreate(MQTT_task,"MQTT",8888,NULL,1,NULL);
+  xTaskCreate(MQTT_task,"MQTT",8888,NULL,1,NULL);
 
-  //创建线程 热敏检测
+  
 
 
   //创建线程 now 传输数据
@@ -156,16 +153,17 @@ void IRinit(){
 }
 
 void PTCinit(){
-  pinMode(IR1_pin,INPUT);  
-  pinMode(IR2_pin,INPUT);
-  pinMode(IR3_pin,INPUT);
-  pinMode(IR4_pin,INPUT);  
+  pinMode(ptc1_pin, INPUT);  
+  pinMode(ptc2_pin, INPUT);
+  pinMode(ptc3_pin, INPUT);
+  pinMode(ptc4_pin, INPUT);  
   Serial.println("温度传感器的值(达到预设值为 0)");
   Serial.println(digitalRead(ptc1_pin));
   Serial.println(digitalRead(ptc2_pin));
   Serial.println(digitalRead(ptc3_pin));
   Serial.println(digitalRead(ptc4_pin));
 }
+
 
 
 
