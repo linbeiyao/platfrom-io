@@ -46,6 +46,10 @@ void updata_now();
 //多线程 now 传输数据
 void now_task(void *pvParameters);
 
+// WIFI 信道扫描
+// 功能：扫描指定WIFI目前信道
+int32_t getWiFiChannel(const char *ssid);
+
 //接受数据的单片机的 MAC 地址  64:B7:08:61:C7:B4
 uint8_t broadcastAddress[] = {0x64,0xB7,0x08,0x61,0xC7,0xB4};
 
@@ -57,11 +61,13 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status){
     Serial.println(status == ESP_NOW_SEND_SUCCESS ? "发送成功" : "发送失败");
 }
 
+
 // 初始化函数
 void now_init(){
     //设置设备的模式
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_AP_STA);
     
+
     //初始化 ESP-NOW
     if (esp_now_init() !=ESP_OK)
     {
@@ -77,7 +83,8 @@ void now_init(){
     esp_now_register_send_cb(OnDataSent);
 
     memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-    peerInfo.channel = 0;  
+    //peerInfo.channel =  0;  
+    peerInfo.channel = 0;
     peerInfo.encrypt = false;
 
     // Add peer        
@@ -144,32 +151,18 @@ void now_task(void *pvParameters){
 
 
 
-// 初始化函数
-esp_err_t now_tow_init(){
-    //设置设备的模式
-    WiFi.mode(WIFI_STA);
-    
-    //初始化 ESP-NOW
-    if (esp_now_init() !=ESP_OK)
+
+
+
+// WIFI 信道扫描
+// 功能：扫描指定WIFI目前信道
+int32_t getWiFiChannel(const char *ssid){
+    if(int32_t n = WiFi.scanNetworks())
     {
-        Serial.println("初始化 esp_now 时出错！");
-        return -1;
+        for(uint8_t i = 0; i < n; i++){
+            if(!strcmp(ssid,WiFi.SSID(i).c_str())){
+                return WiFi.channel(i);
+            }
+        }
     }
-    // 一旦 ESPNow 成功初始化，我们将注册 Send CB to
-    // 获取已发送数据包的状态
-    esp_now_register_send_cb(OnDataSent);
-
-    memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-    peerInfo.channel = 0;  
-    peerInfo.encrypt = false;
-
-    // // Add peer        
-    // if (esp_now_add_peer(&peerInfo) != ESP_OK){
-    //     Serial.println("Failed to add peer");
-    //     return ; 
-    // }
-
-    return esp_now_init();
-
-    
 }

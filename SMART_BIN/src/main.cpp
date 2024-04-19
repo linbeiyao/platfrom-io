@@ -151,35 +151,35 @@ void setup()
 
 
 
-  // 红外传感器 start ///////////////////////////////////////
-  // Serial.println("哈喽哈喽，这里是红外传感器！！！");
-  // Serial.println("红外传感器要开始测试喽......");
-  // delay(500);
-  // pinMode(IR_pin, INPUT);
-  // bool flag = false;
-  // digitalWrite(IR_pin, HIGH);
+  //红外传感器 start ///////////////////////////////////////
+  Serial.println("哈喽哈喽，这里是红外传感器！！！");
+  Serial.println("红外传感器要开始测试喽......");
+  delay(500);
+  pinMode(IR_pin, INPUT);
+  bool flag = false;
+  digitalWrite(IR_pin, HIGH);
 
-  // while (true)
-  // {
-  //   digitalWrite(beep_pin, HIGH);
-  //   Serial.println(int(digitalRead(IR_pin)));
-  //   if (digitalRead(IR_pin) == 0 && flag == false)
-  //   {
-  //     Serial.println("肯定有人在红外传感器前！！对吧？！");
-  //     delay(500);
-  //     flag = true;
+  while (true)
+  {
+    digitalWrite(beep_pin, HIGH);
+    Serial.println(int(digitalRead(IR_pin)));
+    if (digitalRead(IR_pin) == 0 && flag == false)
+    {
+      Serial.println("肯定有人在红外传感器前！！对吧？！");
+      delay(500);
+      flag = true;
 
-  //     break;
-  //   }
-  //   else
-  //   {
-  //     Serial.println("看来你不在红外传感器前......");
-  //     delay(500);
-  //   }
-  //   delay(1000);
-  // }
-  // Serial.println("红外传感器测试结束了!! 欧耶!!");
-  // delay(500);
+      break;
+    }
+    else
+    {
+      Serial.println("看来你不在红外传感器前......");
+      delay(500);
+    }
+    delay(1000);
+  }
+  Serial.println("红外传感器测试结束了!! 欧耶!!");
+  delay(500);
 
 
 
@@ -211,7 +211,7 @@ void setup()
 
 void loop() {
 
-  //guangxian();
+  guangxian();
   delay(500);
 }
 
@@ -329,7 +329,7 @@ void taskCore0(void *pvParameters) {
     turning = true;
 
     // 舵机转动到0度
-    servo.write(0);
+    servo.write(100);
     delay(3000);
 
     // 舵机转动到180度

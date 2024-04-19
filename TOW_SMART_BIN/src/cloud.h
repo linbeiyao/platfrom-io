@@ -93,6 +93,8 @@ void onMQTTConnect(){
     });
 
 }
+
+
 void MQTT_loop(){
 
     Serial.println("MQTT.loop");
@@ -103,8 +105,14 @@ void MQTT_loop(){
   if (millis() - timer1 > report_interval)
   {
     Serial.println("按间隔时间上报传感器数据");
+    
     timer1 = millis();
     pubSensors();
     }
+    
+
+
+    pubSensors();
+
 
 }

@@ -64,13 +64,17 @@ void setup() {
   //获取网络时间
   get_net_time();
   //断开网络
-  //net_disconnect();
+  net_disconnect();
 
-  Serial.println("开始初始化 NOW !!");
-  now_init();
+  
   Serial.println("初始化MQTT");
-  MQTT_INIT();
-
+  //MQTT_INIT();
+  Serial.print("WiFi信道为:");
+  Serial.println(getWiFiChannel(ssid));
+  Serial.println("开始初始化 NOW !!");
+  esp_wifi_set_promiscuous(false); // 关闭监听模式，如果之前已经开启了监听模式的话
+  esp_wifi_set_channel(getWiFiChannel(ssid), WIFI_SECOND_CHAN_NONE); // 设置通信信道为 11
+  now_init();
 
   //将时间输出到串口上
   print_local_time_to_serial();
@@ -92,10 +96,7 @@ void setup() {
 
   //创建线程 物联网云平台
   xTaskCreate(MQTT_task,"MQTT",8888,NULL,1,NULL);
-
   
-
-
   //创建线程 now 传输数据
   xTaskCreate(now_task,"now",8888,NULL,1,NULL);
 }

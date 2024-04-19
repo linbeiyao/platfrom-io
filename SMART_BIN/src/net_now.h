@@ -1,5 +1,6 @@
 #include <esp_now.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
 
 
 
@@ -39,12 +40,18 @@ void yiman_warn();
 //温度异常
 void wendu_warn();
 
+// WIFI 信道扫描
+// 功能：扫描指定WIFI目前信道
+int32_t getWiFiChannel(const char *ssid);
+
 
 
 
 
 void now_init(){
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_AP_STA);
+
+    
 
     if (esp_now_init() != ESP_OK )
     {
@@ -53,6 +60,8 @@ void now_init(){
     else{
         Serial.println("初始化 ESP-NOW 成功！！");
     }
+
+
 
     // 一旦ESPNow成功初始化，我们将注册recv CB
     // 获取recv打包器信息
@@ -63,12 +72,19 @@ void wifi_init(){
 
     Serial.println("WiFi 开始初始化！！");
     WiFi.setSleep(false); //关闭STA模式下wifi休眠，提高反应速度
-    //WiFi.begin(ssid,passwd);//连接wifi
+    WiFi.begin(ssid,passwd);//连接wifi
+
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(500);
         Serial.print(".");
     }
+    Serial.println("之前的 WiFi 信道");
+    Serial.print(getWiFiChannel(ssid));
+
+
+    esp_wifi_set_promiscuous(false); // 关闭监听模式，如果之前已经开启了监听模式的话
+    esp_wifi_set_channel(getWiFiChannel(ssid), WIFI_SECOND_CHAN_NONE); // 设置通信信道为 11
     Serial.println("Connected!!");
     Serial.print("IP Address:");
     Serial.println(WiFi.localIP());
@@ -96,4 +112,21 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   Serial.print(i++);
   Serial.println(" 次接受 now 数据！！");
 }
+
+
+
+// WIFI 信道扫描
+// 功能：扫描指定WIFI目前信道
+int32_t getWiFiChannel(const char *ssid){
+    if(int32_t n = WiFi.scanNetworks())
+    {
+        for(uint8_t i = 0; i < n; i++){
+            if(!strcmp(ssid,WiFi.SSID(i).c_str())){
+                return WiFi.channel(i);
+            }
+        }
+    }
+}
+
+
 
