@@ -6,7 +6,8 @@
 #include "now.h"
 #include "esp_task_wdt.h"
 #include "cloud.h"
-#include <esp_now.h>
+#include "uart.h"
+
 
 
 
@@ -55,26 +56,33 @@ struct tm timeinfo;
 
 
 void setup() {
+
+  pinMode(beeper_pin,OUTPUT);
+  digitalWrite(beeper_pin,HIGH);
+
+
+
   //1602初始化
   LCD_INIT(lcd1602);
   Serial.begin(115200);
 
-  //初始化网络
+  
+  // //初始化网络
   net_init();
   //获取网络时间
   get_net_time();
   //断开网络
   net_disconnect();
 
-  
+
   Serial.println("初始化MQTT");
-  //MQTT_INIT();
-  Serial.print("WiFi信道为:");
-  Serial.println(getWiFiChannel(ssid));
+  MQTT_INIT();
+  //Serial.print("WiFi信道为:");
+  //Serial.println(getWiFiChannel(ssid));
   Serial.println("开始初始化 NOW !!");
-  esp_wifi_set_promiscuous(false); // 关闭监听模式，如果之前已经开启了监听模式的话
-  esp_wifi_set_channel(getWiFiChannel(ssid), WIFI_SECOND_CHAN_NONE); // 设置通信信道为 11
   now_init();
+  Serial.println("开始初始化 UART!!");
+  uart_init();
 
   //将时间输出到串口上
   print_local_time_to_serial();
@@ -87,8 +95,6 @@ void setup() {
   //初始化温度传感器并且串口输出温度传感器的数值
   PTCinit();
 
-//初始化并测试 now 
-  
 
 
   //创建线程 时间输出
@@ -96,9 +102,12 @@ void setup() {
 
   //创建线程 物联网云平台
   xTaskCreate(MQTT_task,"MQTT",8888,NULL,1,NULL);
-  
+
   //创建线程 now 传输数据
-  xTaskCreate(now_task,"now",8888,NULL,1,NULL);
+  //xTaskCreate(now_task,"now",8888,NULL,1,NULL);
+
+  //创建线程 uart传输数据
+  xTaskCreate(uart_send,"uart",5555,NULL,1,NULL);
 }
 
 void loop() {
@@ -176,26 +185,7 @@ void PTCinit(){
 
 
 
-//输出溢满传感器值到串口监视器
-void IR_puts(){
-  delay(1000);
-  Serial.println("溢出传感器的值(被遮挡为 0):");
-  Serial.println(digitalRead(IR1_pin));
-  Serial.println(digitalRead(IR2_pin));  
-  Serial.println(digitalRead(IR3_pin));
-  Serial.println(digitalRead(IR4_pin));
-}
 
-
-
-//输出温度传感器值到串口监视器
-void PTC_puts(){
-  Serial.println("温度传感器的值(达到预设值为 0)");
-  Serial.println(digitalRead(ptc1_pin));
-  Serial.println(digitalRead(ptc2_pin));
-  Serial.println(digitalRead(ptc3_pin));
-  Serial.println(digitalRead(ptc4_pin));
-}
 
 //多线程任务 溢出检测
 void IR_yichu_task(void *pvParameters){

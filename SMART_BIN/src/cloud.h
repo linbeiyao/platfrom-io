@@ -46,8 +46,8 @@ void pubSensors()
 
     Serial.println("向物联网云平台发送数据");
     //四个热敏电阻传感器的数据值
-    bool ptc1 = digitalRead(13),ptc2 = digitalRead(14),ptc3 = digitalRead(27),ptc4 = digitalRead(23);
-    bool yichu_bin1 = digitalRead(33), yichu_bin2 = digitalRead(32), yichu_bin3 = digitalRead(35) , yichu_bin4 = digitalRead(34);
+    bool ptc1 = myData.zhaohuo_BIN1,ptc2 = myData.zhaohuo_BIN2,ptc3 = myData.zhaohuo_BIN3,ptc4 = myData.zhaohuo_BIN4;
+    bool yichu_bin1 = myData.yichu_BIN1, yichu_bin2 = myData.yichu_BIN2, yichu_bin3 = myData.yichu_BIN3 , yichu_bin4 = myData.yichu_BIN4;
     
     obj["yichu_bin1"] = yichu_bin1;
     obj["yichu_bin2"] = yichu_bin2;
@@ -60,21 +60,11 @@ void pubSensors()
     char attributes[512];
 
     
-    //实现垃圾桶状态异常，垃圾桶停止工作并且蜂鸣器报警
-    if (!ptc1 || !ptc2 || !ptc3 || !ptc4 ||!yichu_bin1 || !yichu_bin2 || !yichu_bin3 || !yichu_bin4 )  //当八个传感器中任意一个，满足条件时触发异常 也就是给对应针脚高电压
-    {
-        //传递异常状态到 ESP_1
-        Serial.println("垃圾桶状态异常");
+
+    Serial.println("垃圾桶状态异常");
         
         
-    }
-    else
-    {
-        //传递异常状态到 ESP_1
-       
-        //蜂鸣器不发声
-        //。。。。。。
-    }
+
     
 
     serializeJson(obj, attributes);

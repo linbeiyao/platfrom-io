@@ -7,7 +7,8 @@
 #include <U8g2lib.h>
 #include "esp_task_wdt.h"
 #include "net_now.h"
-//#include "bule.h"
+ #include "cloud.h"
+ #include "uart.h"
 
 TaskHandle_t task_asrpro;
 TaskHandle_t task_ptc;
@@ -31,6 +32,12 @@ void taskCore0(void *pvParameters);
 void taskCore1(void *pvParameters);
 //多线程 线程控制线程何时启动
 void task_cont_task(void *pvParameters);
+// //多线程 物联网云平台
+// void MQTT_task(void *pvParameters);
+
+// 多线程 uart接受数据
+void uart_recv(void *pvParameters);
+
 
 //初始化屏幕
 void init_oled();
@@ -113,9 +120,8 @@ void setup()
   //pinMode(ptc_pin, INPUT);  // 热敏电阻模块 start
   guanxian_init();// 光线传感 初始化
   init_oled();
-  //beeper_start();// beeper start 
-  now_init();    //初始化 now 协议
 
+  now_init();    //初始化 now 协议
 
 
   Serial.begin(115200);
@@ -124,7 +130,8 @@ void setup()
   Serial.println("我要开始初始化喽......");
   //delay(500);
 
-
+  Serial.println("开始初始化uart");
+  uart_init();
   
 
   // 舵机 start ==============================================
@@ -204,6 +211,12 @@ void setup()
   // 创建线程任务 线程控制线程
   xTaskCreate(task_cont_task,"task_cont_task",1024,NULL,1 ,&task_to_task);
 
+  // 创建线程任务 uart
+  xTaskCreate(uart_recv,"uart",5555,NULL,1,NULL);
+
+
+  //创建线程 物联网云平台
+  //xTaskCreate(MQTT_task,"MQTT",8888,NULL,1,NULL);
   
 }
 
@@ -223,36 +236,6 @@ void loop() {
 
 
 
-
-
-
-
-
-
-// // 热敏电阻模块 //////////////////////////////////////////////
-// void ptc()
-// {
-//   //为低电压就代表高温度，发出报警,发出报警只需要给对应针脚高电压即可
-//   if(!digitalRead(ptc_pin))
-//   {
-//     Serial.println(digitalRead(ptc_pin));
-//     Serial.println("///////////////////////////");
-//     Serial.println("警告：垃圾桶内可能着火！！");
-//     Serial.println("警告：垃圾桶内可能着火！！");
-//     Serial.println("警告：垃圾桶内可能着火！！");
-//     Serial.println("///////////////////////////");    
-//     display_bmp(65,0,64,64,jinggao_64_64,oled);
-
-
-
-//     digitalWrite(beep_pin,LOW);
-//   }
-//   else
-//   {
-//     digitalWrite(beep_pin,HIGH);
-//   }
-// }
-// // 热敏电阻模块 //////////////////////////////////////////////
 
 void beeper_start()
 {
@@ -462,6 +445,8 @@ void handleAlarm();  //处理着火异常
 void handleOverflow();  //处理溢满异常
 void NOWDATA_test(void *pvParameters);
 
+
+
 void task_cont_task(void *pvParameters) {
     TaskHandle_t task_warning = NULL;
     while (true) {
@@ -620,6 +605,52 @@ void handleOverflow() {
 }
 
 
+// //多线程 物联网云平台
+// void MQTT_task(void *pvParameters){
+//   //必须有一个死循环
+//     while (true)
+//   {
+//     Serial.println("多线程 物联网云平台");
+//     Serial.println("");
+//     //检测时间间隔（ 35秒 ） 提交数据
+//     MQTT_loop();
+
+//     // 添加适当的延迟，以防止任务占用 CPU 过多
+//     vTaskDelay(pdMS_TO_TICKS(1000 * 10)); // 例如，延迟 100 毫秒
+//   }
+// }
+
+
+// 多线程 uart接受数据
+void uart_recv(void *pvParameters){
+while (1)
+{
+
+  //uart_recv_recall();
+
+  //将从 Serial2 接受的数据赋值到 myData 中，从而触发异常
+  memcpy(&myData,&MyUartData,sizeof(MyUartData));
+  // Serial.println("Uart Data:");
+  //   Serial.println(MyUartData.yichu_BIN1);  
+  //   Serial.println(MyUartData.yichu_BIN2);
+  //   Serial.println(MyUartData.yichu_BIN3);
+  //   Serial.println(MyUartData.yichu_BIN4);
+  //   Serial.println(MyUartData.zhaohuo_BIN1);
+  //   Serial.println(MyUartData.zhaohuo_BIN2);
+  //   Serial.println(MyUartData.zhaohuo_BIN3);
+  //   Serial.println(MyUartData.zhaohuo_BIN4);
+  //   Serial.println("NOW Data:");
+  //   Serial.println(myData.yichu_BIN1);  
+  //   Serial.println(myData.yichu_BIN2);
+  //   Serial.println(myData.yichu_BIN3);
+  //   Serial.println(myData.yichu_BIN4);
+  //   Serial.println(myData.zhaohuo_BIN1);
+  //   Serial.println(myData.zhaohuo_BIN2);
+  //   Serial.println(myData.zhaohuo_BIN3);
+  //   Serial.println(myData.zhaohuo_BIN4);
+  vTaskDelay(1000);   
+}
+}
 
 
 

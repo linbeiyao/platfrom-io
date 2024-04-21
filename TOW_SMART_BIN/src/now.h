@@ -1,5 +1,7 @@
 #include <esp_now.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
+
 
 //传送信息结构体的标志
 #define yichu_flag 0
@@ -16,6 +18,8 @@
 #define ptc2_pin  14
 #define ptc3_pin  27
 #define ptc4_pin  23
+
+#define beeper_pin 4
 
 //垃圾桶传感器状态
 struct bin_static 
@@ -50,6 +54,8 @@ void now_task(void *pvParameters);
 // 功能：扫描指定WIFI目前信道
 int32_t getWiFiChannel(const char *ssid);
 
+void wifi_init();
+
 //接受数据的单片机的 MAC 地址  64:B7:08:61:C7:B4
 uint8_t broadcastAddress[] = {0x64,0xB7,0x08,0x61,0xC7,0xB4};
 
@@ -57,6 +63,20 @@ esp_now_peer_info peerInfo;
 
 //发送数据时的回调函数
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status){
+    // //实现垃圾桶状态异常，垃圾桶停止工作并且蜂鸣器报警
+    // if (!IR1_pin || !IR2_pin || !IR3_pin || !IR4_pin ||!ptc1_pin || !ptc2_pin || !ptc3_pin || !ptc4_pin )  //当八个传感器中任意一个，满足条件时触发异常 也就是给对应针脚高电压
+    // {
+        
+    //     Serial.println("垃圾桶状态异常");
+    //     //蜂鸣器发声
+    //     digitalWrite(beeper_pin,LOW );
+        
+    // }
+    // else
+    // {
+    //     //蜂鸣器不发声
+    //     digitalWrite(beeper_pin,HIGH);
+    // }
     Serial.print("\r\n最后一个数据包发送状态:\t");
     Serial.println(status == ESP_NOW_SEND_SUCCESS ? "发送成功" : "发送失败");
 }
@@ -66,7 +86,15 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status){
 void now_init(){
     //设置设备的模式
     WiFi.mode(WIFI_AP_STA);
+
+    // int32_t channel = getWiFiChannel(ssid);
+    // Serial.print("channel:");
+    // Serial.println(channel);
+    // esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);    
+
+ 
     
+
 
     //初始化 ESP-NOW
     if (esp_now_init() !=ESP_OK)
@@ -83,7 +111,6 @@ void now_init(){
     esp_now_register_send_cb(OnDataSent);
 
     memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-    //peerInfo.channel =  0;  
     peerInfo.channel = 0;
     peerInfo.encrypt = false;
 
@@ -92,6 +119,10 @@ void now_init(){
         Serial.println("Failed to add peer");
         return ; 
     }
+
+
+    //now_send_data();    
+
 }
 
 //发送数据   
@@ -132,16 +163,6 @@ void now_task(void *pvParameters){
    while (true)
    {
     
-    // if (now_tow_init() != ESP_OK)
-    // {
-    //     Serial.println("初始化 esp_now 时出错！");
-    //     Serial.println("重新初始化！！");
-    //     break;
-    // }
-
-
-    //now_init();
-
     now_send_data();
     vTaskDelay(1000);
    }
@@ -165,4 +186,31 @@ int32_t getWiFiChannel(const char *ssid){
             }
         }
     }
+}
+
+
+
+void wifi_init(){
+
+    Serial.println("NOW WiFi 开始初始化！！");
+
+    WiFi.mode(WIFI_AP_STA);
+    // esp_wifi_set_promiscuous(false); // 关闭监听模式，如果之前已经开启了监听模式的话
+    // esp_wifi_set_channel(getWiFiChannel(ssid), WIFI_SECOND_CHAN_NONE); // 设置通信信道为 11
+
+    
+   
+    WiFi.begin("esp",passwd);//连接wifi
+
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(500);
+        Serial.print(".");
+    }
+
+
+    
+    Serial.println("Connected!!");
+    Serial.print("IP Address:");
+    Serial.println(WiFi.localIP());
 }

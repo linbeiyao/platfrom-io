@@ -289,7 +289,8 @@
   "C_Cpp_Runner.useLinkTimeOptimization": false,
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
-    "bmp.h": "c"
+    "bmp.h": "c",
+    "*.tcc": "cpp"
   },
   "idf.port": "/dev/ttyUSB0"
 }
