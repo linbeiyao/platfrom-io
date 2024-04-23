@@ -32,8 +32,7 @@ void taskCore0(void *pvParameters);
 void taskCore1(void *pvParameters);
 //多线程 线程控制线程何时启动
 void task_cont_task(void *pvParameters);
-// //多线程 物联网云平台
-// void MQTT_task(void *pvParameters);
+
 
 // 多线程 uart接受数据
 void uart_recv(void *pvParameters);
@@ -84,9 +83,9 @@ U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, 22, 21, U8X8_PIN_NONE);
 // asr pro pin
 #define asr_1_pin 15
 #define asr_2_pin 2
-#define asr_3_pin 4
-#define asr_4_pin 5
-#define asr_output_pin 18
+#define asr_3_pin 23
+#define asr_4_pin 18
+
 
 // 舵机最大转动角度
 #define MAX_WIDTH 2500
@@ -151,6 +150,8 @@ void setup()
   servo_2.attach(servo_2_pin, MIN_WIDTH, MAX_WIDTH);
   servo_3.attach(servo_3_pin, MIN_WIDTH, MAX_WIDTH);
   servo_4.attach(servo_4_pin, MIN_WIDTH, MAX_WIDTH);
+
+
 
   Serial.println("舵机初始化完成喽！！");
   delay(1000);
@@ -225,6 +226,17 @@ void setup()
 void loop() {
 
   guangxian();
+
+  Serial.println("asr 针脚状态：");
+  Serial.println(servo1_turning);
+  Serial.println(servo2_turning);
+  Serial.println(servo3_turning);
+  Serial.println(servo4_turning);
+  Serial.println();
+  Serial.println(digitalRead(asr_1_pin));
+  Serial.println(digitalRead(asr_2_pin));
+  Serial.println(digitalRead(asr_3_pin));
+  Serial.println(digitalRead(asr_4_pin));
   delay(500);
 }
 
@@ -247,7 +259,12 @@ void beeper_start()
 void taskCore0(void *pvParameters) {
  while (1) {
 
+
+
         esp_task_wdt_reset();
+        
+  
+
         // 检查舵机状态并进行转动
         if (!servo1_turning && digitalRead(asr_1_pin)) {
             oled.clearDisplay();
@@ -258,6 +275,7 @@ void taskCore0(void *pvParameters) {
             oled.clearDisplay();
             //clear_workspace(oled);
             UI_main(oled,main_UI_flag);
+
             delay(1000);
         }
         if (!servo2_turning && digitalRead(asr_2_pin)) {
@@ -280,12 +298,7 @@ void taskCore0(void *pvParameters) {
             UI_main(oled,main_UI_flag);
             delay(1000);
         }
-        // Serial.println(servo4_turning);
-        // Serial.println();
-        // Serial.println(digitalRead(asr_1_pin));
-        // Serial.println(digitalRead(asr_2_pin));
-        // Serial.println(digitalRead(asr_3_pin));
-        // Serial.println(digitalRead(asr_4_pin));
+   
         if (!servo4_turning && digitalRead(asr_4_pin)) {
             oled.clearDisplay();
             Serial.println("舵机4开始转!");
@@ -400,7 +413,7 @@ void ASR_RRO()
   pinMode(asr_2_pin,INPUT);
   pinMode(asr_3_pin,INPUT);
   pinMode(asr_4_pin,INPUT);  
-  pinMode(asr_output_pin,OUTPUT);
+  
 
 }
 //初始化屏幕
