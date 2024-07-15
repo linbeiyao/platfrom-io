@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "TFT_demo1"
+		},
+		{
+			"name": "TFT_demo2",
+			"path": "TFT_demo2"
+		},
+		{
+			"name": "TFT_demo3",
+			"path": "TFT_demo3"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"cstddef": "cpp",
+			"lv_mem.h": "c",
+			"lv_init.h": "c",
+			"lv_conf_internal.h": "c"
+		}
+	}
+}

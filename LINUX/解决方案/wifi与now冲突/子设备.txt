@@ -1,0 +1,86 @@
+/*===================================================================================*\
+ *创建时间：2023.7.30
+ *模块名称：数据接收函数
+ *模块功能：ESP_NOW 接收信息时的回调函数，每次接收信息会自动调用该函数
+ ====================================================================================*/
+void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
+{
+  memcpy(&EspNowData, incomingData, sizeof(EspNowData));
+  Serial.print("NodeName: ");
+  Serial.println(EspNowData.NodeName);
+  Serial.print("MSP430SW: ");
+  Serial.println(EspNowData.MSP430SW);
+  Serial.println();
+  if (EspNowData.MSP430SW == 1)
+  {
+    Serial.println("电源状态反转");
+    digitalWrite(MSP430Power, !digitalRead(MSP430Power));
+    int gpionum = digitalRead(MSP430Power);
+    Serial.println(gpionum);
+  }
+}
+/*===================================================================================*\
+ *创建时间：2023.7.30
+ *模块名称：数据发送函数
+ *模块功能：发送信息时的回调函数，每次发送信息会自动调用该函数
+ ====================================================================================*/
+// Callback to have a track of sent messages
+void OnSent(const uint8_t *mac_addr, esp_now_send_status_t status)
+{
+  Serial.print("\r\nSend message status:\t");
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "成功" : "失败");
+}
+int32_t getWiFiChannel(const char *ssid)
+{
+  if (int32_t n = WiFi.scanNetworks())
+  {
+    for (uint8_t i = 0; i < n; i++)
+    {
+      if (!strcmp(ssid, WiFi.SSID(i).c_str()))
+      {
+        return WiFi.channel(i);
+      }
+    }
+  }
+  return 0;
+}
+/*===================================================================================*\
+ *创建时间：2023.7.30
+ *模块名称：初始化函数
+ *模块功能：初始化功能，开机执行一次
+ ====================================================================================*/
+void setup()
+{
+  Serial.begin(115200);
+  pinMode(MSP430Power, OUTPUT);
+  digitalWrite(MSP430Power, HIGH);
+
+  WiFi.mode(WIFI_AP_STA);
+  int32_t channel = getWiFiChannel(ssid);
+  esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+  // Serial.print("信道：");
+  // Serial.println(channel);
+  // Init ESP-NOW
+  if (esp_now_init() != ESP_OK)
+  {
+    Serial.println("There was an error initializing ESP-NOW");
+    return;
+  }
+  // We will register the callback function to respond to the event
+  esp_now_register_send_cb(OnSent);
+  // 设置接收数据回调函数
+  esp_now_register_recv_cb(OnDataRecv);
+  // Register the slave
+  esp_now_peer_info_t slaveInfo;
+  memcpy(slaveInfo.peer_addr, slaveAddress, 6);
+  slaveInfo.channel = 0;
+  slaveInfo.encrypt = false;
+  // Add slave
+  if (esp_now_add_peer(&slaveInfo) != ESP_OK)
+  {
+    Serial.println("There was an error registering the slave");
+    return;
+  }
+  // 向主机发送上线信息
+  esp_err_t result = esp_now_send(slaveAddress, (uint8_t *)&EspNowData, sizeof(EspNowData));
+}
